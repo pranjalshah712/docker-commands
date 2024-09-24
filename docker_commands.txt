@@ -1,0 +1,180 @@
+docker-file----
+docker-image----
+docker-container----
+
+
+docker -v  -->  check version
+
+------------------------------------------------------------------------------------------------------------------------
+
+docker-file
+==================
+
+FROM python:3.9 --> lib/technology : version
+
+WORKDIR /myapp --> create folder in empty container
+
+COPY requirements.txt .  -->  copy requirements.txt file
+
+RUN pip install --no-cache-dir -r requirements.txt  --> install dependencies
+
+COPY . . or . /myapp  --> copy application in myapp folder
+
+EXPOSE 8000  -->  set or define port
+
+CMD ["python", "app.py"]  --> to run docker-image need this two command
+
+------------------------------------------------------------------------------------------------------------------------
+
+docker-image
+==================
+
+docker build -t my-python-app .  --> create docker-image with name my-python-app / . means current file  -->  use in IDE
+				 --> bydefault name given optional(-t my-python-app)
+
+[
+docker build -t my-python-app:1 .  --> 1/2 version creates two different images
+docker build -t my-python-app:2 .
+]
+
+docker rmi "name":1 --> remove image with version 1(2 is still present)
+
+docker image ls --> check image created
+
+docker run my-python-app / imageid(get using ls command) --> to run image
+
+docker run -p 8000:8000 my-python-app / imageid --> to access app on browser on port 8000 outside container where app
+						    is running.
+
+docker run -d -p 8000:8000 my-python-app / imageid --> run in detached mode terminal is free to use other commands
+
+docker run -d --rm -p 8000:8000 my-python-app / imageid --> after stoping container automatic gets removed
+
+docker run -d --rm --name "name" -p 8000:8000 imageid --> to give name to container
+
+[
+docker run -d -p 8001:8000 my-python-app    
+docker run -d -p 8002:8000 my-python-app     -->  create multiple containers. 8001/8002/8003 runs on browser.
+docker run -d -p 8003:8000 my-python-app          8000 is server port.
+]
+
+docker ps  --> process status only running containers
+docker ps -a --> process status all containers
+
+docker rm containernames  --> remove container
+
+docker stop my-python-app --> to stop image running
+
+docker run -it "name" --> to interact with code
+
+docker login --> connect with dockerhub
+
+docker tag oldname newname --> creates another name for image (original name also exists)
+
+[
+docker tag imagename dockerusername/repositoryname:tag  --> give alias
+docker push dockerusername/repositoryname:tag(for version) --> to push image in dockerhub repository
+]
+
+docker pull dockerusername/repositoryname:tag(for version) --> to pull image from dockerhub repository to remote device
+
+------------------------------------------------------------------------------------------------------------------------
+
+dockervolume
+==================
+
+docker volume create my_volume
+
+docker run -it -v "volumename":/myapp/ "imagename"  --> myapp(current working directory)-->maintains data locally 
+						   even after rm command used to remove container.
+
+
+docker volume ls  --> check volumes
+
+docker volume inspect "volumename"  --> volume info
+
+------------------------------------------------------------------------------------------------------------------------
+
+mountbind
+==================
+
+docker run -v absolutepath:/myapp/service.txt "imagename"  --> aboslute path of service.txt present in local.
+							   --> /myapp/service.txt present in container
+							   --> volume is not created.
+------------------------------------------------------------------------------------------------------------------------
+
+.dockerignore --> filename - files will not get copied in image whose names are written in this file.
+
+ ------------------------------------------------------------------------------------------------------------------------
+
+connect container <-> local database
+====================================
+
+mysql.connector.connect(
+    host='localhost',  -->  instead of localhost, (host='host.docker.internal')
+    user='root',
+    password='root',
+    database='your_database'
+)
+
+
+ ------------------------------------------------------------------------------------------------------------------------
+
+multiple containers one has python code other has mysql
+=======================================================
+
+docker pull mysql
+
+docker run -d --env MYSQL_ROOT_PASSWORD="root" --env MYSQL_DATABASE="user_info" --name mysqldb(container name) mysql
+
+docker inspect mysqldb  --> to get host ipaddress
+
+mysql.connector.connect(
+    host='127.1.1.0',  
+    user='root',              -->  on python side
+    password='root',
+    database='user_info'
+)
+
+
+ ------------------------------------------------------------------------------------------------------------------------
+
+docker-network
+================
+
+docker network create my-net  --> create a network (network name-> my-net)
+
+[                         
+docker run -d --env MYSQL_ROOT_PASSWORD="root" --env MYSQL_DATABASE="user_info" --name mysqldb(container name) --network my-net mysql 
+                                                                             -->  assign this container to network my-net
+docker run -it --rm --network my-net myapp
+]
+
+mysql.connector.connect(
+    host='mysqldb',  
+    user='root',              -->  on python side host is mysqldb because this 2 containers are in same docker network
+    password='root',          -->  easy access
+    database='user_info'
+)
+ ------------------------------------------------------------------------------------------------------------------------
+
+docker-compose
+================
+
+docker-compose.yml  --> create yml file.create service in there and enter all commands you need your container to run with.
+
+docker-compose up/down 
+
+-v --> at the end to remove networks/volumes upon stop
+
+--build --> to again build image and run --> by default only creates one uses that again and again
+
+------------------------------------------------------END--------------------------------------------------------------------------
+
+
+
+
+
+
+
+
